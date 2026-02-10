@@ -100,8 +100,8 @@ class StillePostGame:
         ]
 
         if player.private_hints:
-            parts.append("\n## 🔒 PRIVATE HINTS (only you can see these)")
-            parts.extend(f"- {h}" for h in player.private_hints)
+            parts.append("\n## 🔒 YOUR PRIVATE HINTS (Do not share!)")
+            parts.extend(f">>> [SYSTEM HINT]: {h} <<<" for h in player.private_hints)
 
         return "\n".join(parts)
 
@@ -181,8 +181,10 @@ class StillePostGame:
         all_model_names = [m for models in PROVIDER_MODELS.values() for m in models]
         guess_prompt = (
             "It's time to guess your own identity! Based on the conversation so far, "
-            "what model do you think YOU are? Reply with ONLY the exact model identifier. "
-            f"Options: {', '.join(all_model_names)}"
+            "what model do you think YOU are?\n\n"
+            "⚠️ STRICT INSTRUCTION: Reply with ONLY the exact model identifier string (e.g., 'gpt-5'). "
+            "Do NOT include any reasoning, markdown formatting, or other text. "
+            "Just the ID."
         )
 
         for player in list(self.game_state.active_players):
@@ -192,6 +194,12 @@ class StillePostGame:
                 *self.game_state.conversation,
                 {"role": "user", "content": guess_prompt},
             ]
+
+            # Debug: show what hints the player ACTUALLY has
+            if player.private_hints:
+                print(f"  [DEBUG] Player {player.player_id} has hints: {player.private_hints}")
+            else:
+                print(f"  [DEBUG] Player {player.player_id} has NO hints.")
 
             try:
                 result = provider.generate(messages=messages, model=player.model_id)
@@ -206,6 +214,8 @@ class StillePostGame:
                     player.has_won = True
                 else:
                     print(f"  ❌ Wrong! Player {player.player_id} continues.")
+                input("\n  ⏎ Press Enter to continue...")
+
             except Exception as e:
                 print(f"  ⚠️  Player {player.player_id} error: {e}")
 
@@ -247,20 +257,23 @@ class StillePostGame:
                 })
 
                 print(f"\n{'─'*55}")
-                print(f"  🎤 Player {player.player_id}  ({player.provider_name} / ???)")
+                print(f"  🎤 Player {player.player_id}  ({player.provider_name} model / ???)")
                 print(f"{'─'*55}")
-                print(content[:800])
-                if len(content) > 800:
-                    print(f"  ... [{len(content) - 800} more chars]")
+                print(content)
 
                 # Handle tool calls during intro
                 for tc in result.get("tool_calls", []):
+                    raw_args = tc['arguments']
+                    args_str = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+                    print(f"\n  🔧 [{tc['name']}] args: {args_str}")
                     tool_result = self._execute_tool(player, tc)
                     print(f"\n  🔧 [{tc['name']}] → {tool_result}")
                     self.game_state.conversation.append({
                         "role": "user",
                         "content": f"[GAME MASTER]: {tool_result}",
                     })
+
+                input("\n  ⏎ Press Enter to continue...")
 
             except Exception as e:
                 print(f"\n  ⚠️  Player {player.player_id} intro error: {e}")
@@ -294,20 +307,23 @@ class StillePostGame:
             })
 
             print(f"\n{'─'*55}")
-            print(f"  🎤 Player {player.player_id}  ({player.provider_name} / ???)")
+            print(f"  🎤 Player {player.player_id}  ({player.provider_name} model / ???)")
             print(f"{'─'*55}")
-            print(content[:600])
-            if len(content) > 600:
-                print(f"  ... [{len(content) - 600} more chars]")
+            print(content)
 
             # Handle tool calls
             for tc in result.get("tool_calls", []):
+                raw_args = tc['arguments']
+                args_str = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+                print(f"\n  🔧 [{tc['name']}] args: {args_str}")
                 tool_result = self._execute_tool(player, tc)
-                print(f"\n  🔧 [{tc['name']}] → {tool_result}")
+                print(f"     → {tool_result}")
                 self.game_state.conversation.append({
                     "role": "user",
                     "content": f"[GAME MASTER]: {tool_result}",
                 })
+
+            input("\n  ⏎ Press Enter to continue...")
 
         except Exception as e:
             print(f"\n  ⚠️  Player {player.player_id} error: {e}")

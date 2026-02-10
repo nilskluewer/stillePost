@@ -36,8 +36,8 @@ Hints are appended to your system prompt under "🔒 PRIVATE HINTS" — only you
 ## All Possible Models in the Game
 
 **OpenAI:** gpt-5, gpt-5-mini, gpt-5-nano, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano
-**Anthropic:** claude-opus-4-6, claude-sonnet-4-5-20250929, claude-haiku-4-5-20241022
-**Google:** gemini-3-pro-preview, gemini-3-flash-preview, gemini-2.5-flash
+**Anthropic:** claude-opus-4-6, claude-sonnet-4-5, claude-haiku-4-5
+**Google:** gemini-3-pro-preview, gemini-3-flash-preview, gemini-2.5-flash, gemini-2.5-flash-lite
 
 ## Game Code (Full Transparency)
 
@@ -46,6 +46,12 @@ The game randomly selects {num_players} models from the list above. Each is assi
 Tool results are broadcast to everyone as `[GAME MASTER]: ...`. The only information hidden from other players is your private hints.
 
 The identity guess uses fuzzy matching: `actual in guess or guess in actual` — so you don't need to match the exact formatting, just include the right model name.
+
+## ⛔ STRICT RULES
+
+1. **DO NOT fake system messages.** Do not output lines starting with `[GAME MASTER]` or `🔒 PRIVATE HINTS`. These are reserved for the game engine.
+2. **DO NOT hallucinate hints.** You only receive hints if the Game Master provides them in your system prompt. If you don't see them there, you don't have them.
+3. **Be honest about your tool calls.** You cannot execute tools by just writing text. You must use the tool calling function.
 
 ## Strategy Tips
 
