@@ -1,0 +1,12 @@
+[project]
+name = "stillepost"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.79.0",
+    "google-cloud-secret-manager>=2.26.0",
+    "google-genai>=1.62.0",
+    "openai>=2.20.0",
+]
